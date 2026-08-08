@@ -2,25 +2,35 @@
 
 Assistant IA professionnel orienté ingénierie MEP, CVC/HVAC, BIM/Revit, Smart Building, automatisation, informatique, web et documents professionnels.
 
-## Objectif
+## Version 2
 
-Ce dépôt fournit une base d'application web utilisant l'API OpenAI avec un prompt système professionnel et rigoureux.
+La V2 ajoute :
+
+- conversation multi-tour ;
+- persistance locale de l'historique dans le navigateur ;
+- sélection GPT-5.6 / GPT-5.6 Sol ;
+- interface AXORA sombre de type command center ;
+- endpoint de santé `/api/health` ;
+- export Markdown de la conversation ;
+- limites serveur et gestion d'erreurs renforcée.
 
 ## Sécurité
 
 - Ne jamais committer de clé API.
 - Utiliser `OPENAI_API_KEY` uniquement comme variable d'environnement côté serveur.
-- Le fichier `.env` est ignoré par Git.
-- Le dépôt est actuellement public : n'y déposer aucune donnée confidentielle, clé, mot de passe ou document client sensible.
+- `.env` et `.env.local` sont ignorés par Git.
+- Le dépôt est actuellement public : ne jamais y déposer de secrets, données clients ou documents confidentiels.
 
-## Installation
+## Installation locale
+
+Prérequis : Node.js 20 ou supérieur.
 
 ```bash
 npm install
 cp .env.example .env
 ```
 
-Renseigner ensuite `OPENAI_API_KEY` dans `.env` localement, sans publier ce fichier.
+Configurer ensuite localement `OPENAI_API_KEY` dans `.env`, sans publier ce fichier.
 
 ## Démarrage
 
@@ -28,16 +38,33 @@ Renseigner ensuite `OPENAI_API_KEY` dans `.env` localement, sans publier ce fich
 npm start
 ```
 
-Puis ouvrir `http://localhost:3000`.
+Ouvrir ensuite `http://localhost:3000`.
+
+## Variables d'environnement
+
+```text
+OPENAI_API_KEY=<secret côté serveur>
+OPENAI_MODEL=gpt-5.6
+PORT=3000
+```
 
 ## Architecture
 
-- `src/server.js` : serveur HTTP et endpoint `/api/chat`
-- `src/assistant.js` : appel OpenAI et chargement du prompt système
-- `prompts/system.md` : instructions professionnelles de l'assistant
-- `public/index.html` : interface utilisateur
-- `.env.example` : variables d'environnement attendues
+- `src/server.js` : serveur Express, API de chat et health check ;
+- `src/assistant.js` : intégration OpenAI Responses API ;
+- `prompts/system.md` : instructions professionnelles de l'assistant ;
+- `public/index.html` : interface command center ;
+- `.env.example` : exemple sans secret.
+
+## Contrôles avant production
+
+1. rendre le dépôt privé si le projet doit contenir des éléments AXORA confidentiels ;
+2. configurer `OPENAI_API_KEY` dans les secrets du fournisseur d'hébergement ;
+3. ajouter authentification et contrôle d'accès avant exposition publique ;
+4. ajouter rate limiting et journalisation structurée ;
+5. effectuer des tests fonctionnels avec une clé API valide ;
+6. définir une politique de conservation des conversations et fichiers.
 
 ## État
 
-Version initiale : socle applicatif prêt à configurer. Aucun secret n'est stocké dans le dépôt.
+V2 applicative publiée dans le dépôt. La configuration d'un secret API et le test live doivent être effectués dans l'environnement d'exécution, jamais dans Git.
