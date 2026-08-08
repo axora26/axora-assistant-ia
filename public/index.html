@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AXORA Assistant IA</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #08101f; color: #eef4ff; min-height: 100vh; }
+    main { width: min(1000px, 92vw); margin: 0 auto; padding: 48px 0; }
+    header { margin-bottom: 28px; }
+    h1 { margin: 0 0 8px; font-size: clamp(2rem, 5vw, 3.4rem); }
+    .subtitle { color: #9fb0cb; margin: 0; }
+    #messages { min-height: 52vh; display: grid; gap: 14px; align-content: start; margin: 28px 0; }
+    .message { padding: 16px 18px; border: 1px solid #253451; border-radius: 14px; white-space: pre-wrap; line-height: 1.55; }
+    .user { background: #13213a; margin-left: 12%; }
+    .assistant { background: #0d1729; margin-right: 8%; }
+    form { position: sticky; bottom: 0; padding: 16px 0; background: linear-gradient(transparent, #08101f 22%); }
+    textarea { width: 100%; min-height: 120px; resize: vertical; border-radius: 14px; border: 1px solid #31415e; background: #0d1729; color: inherit; padding: 16px; font: inherit; }
+    .actions { display: flex; justify-content: flex-end; margin-top: 10px; }
+    button { border: 0; border-radius: 10px; padding: 11px 18px; font-weight: 700; cursor: pointer; background: #eef4ff; color: #08101f; }
+    button:disabled { opacity: .5; cursor: wait; }
+    .status { color: #9fb0cb; font-size: .9rem; min-height: 1.2em; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>AXORA Assistant IA</h1>
+      <p class="subtitle">Ingénierie · BIM · Smart Building · Automatisation · IT · Documents professionnels</p>
+    </header>
+
+    <section id="messages" aria-live="polite">
+      <div class="message assistant">Assistant prêt. Décrivez votre besoin technique ou professionnel.</div>
+    </section>
+
+    <form id="chat-form">
+      <textarea id="message" maxlength="20000" required placeholder="Ex. Calcule et vérifie le dimensionnement de cette installation…"></textarea>
+      <div class="actions"><button id="send" type="submit">Envoyer</button></div>
+      <div class="status" id="status"></div>
+    </form>
+  </main>
+
+  <script>
+    const form = document.querySelector('#chat-form');
+    const input = document.querySelector('#message');
+    const messages = document.querySelector('#messages');
+    const button = document.querySelector('#send');
+    const status = document.querySelector('#status');
+
+    function addMessage(text, role) {
+      const el = document.createElement('div');
+      el.className = `message ${role}`;
+      el.textContent = text;
+      messages.appendChild(el);
+      el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const message = input.value.trim();
+      if (!message) return;
+
+      addMessage(message, 'user');
+      input.value = '';
+      button.disabled = true;
+      status.textContent = 'Analyse en cours…';
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Erreur serveur');
+        addMessage(data.answer, 'assistant');
+        status.textContent = '';
+      } catch (error) {
+        addMessage(`Erreur : ${error.message}`, 'assistant');
+        status.textContent = 'La requête a échoué.';
+      } finally {
+        button.disabled = false;
+        input.focus();
+      }
+    });
+  </script>
+</body>
+</html>
